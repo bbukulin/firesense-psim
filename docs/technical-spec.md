@@ -269,3 +269,229 @@ Implementation:
     - In acknowledgeIncident: user_id = operator’s ID, action = ‘ack_incident’, description = Incident ${incident.id} acknowledged by ${operator.name}.
     - For logins: We can hook into NextAuth events. NextAuth has an event callback events.signIn where we get user and can log login. 
 - Secure Storage: The audit logs are in the main DB; ensure proper permissions (only admin queries it if UI provided). The data might contain sensitive info (like user emails, etc.), but it’s internal.
+
+
+# 4 - Server Actions and Integrations
+This section details how we implement server-side functionality: Next.js Server Actions (for seamless form handling), REST API endpoints (for external or client use), and integration with third-party services (namely Supabase for real-time).
+
+## Next.js Server Actions:
+- We leverage Server Actions for operations initiated by form submissions in the UI. This allows calling backend logic directly from components without manual API fetch code, streamlining the implementation
+- Usage Pattern: In a server component or a client component (wrapped by a form), we assign the form’s action attribute to a server function. Example for adding a camera:
+``` 
+// in app/admin/cameras/page.tsx (React component)
+import { addCamera } from './actions';  // a server action
+...
+return <form action={addCamera}>
+  <input type="text" name="name" required />
+  <input type="text" name="location" />
+  <input type="url" name="streamUrl" required />
+  <button type="submit">Add Camera</button>
+</form>;
+``` 
+- The <form> submission will invoke addCamera on the server automatically
+- We define addCamera in app/admin/cameras/actions.ts:
+``` 
+'use server';
+import { db } from '@/db'; import { cameras } from '@/db/schema'; import { getServerSession } from 'next-auth';
+export async function addCamera(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  if (!session || session.user.role !== 'admin') throw new Error('Unauthorized');
+  const name = formData.get('name')?.toString() ?? '';
+  const location = formData.get('location')?.toString() ?? '';
+  const url = formData.get('streamUrl')?.toString() ?? '';
+  // Validate inputs...
+  await db.insert(cameras).values({
+    name, location, streamUrl: url, createdBy: session.user.id
+  });
+  // Optionally, log to audit...
+  return { success: true };
+}
+``` 
+- This function runs on the server upon form submission. If it completes without throwing, Next.js will automatically rerender the component (or the portion that was streaming) with updated data. For instance, we might re-fetch the camera list after submission (or rely on a cache invalidation). We can use Next.js revalidation tags or manually re-fetch the list in a useEffect after a successful submission. Alternatively, the action can return the new camera data, and the component might merge it into state.
+- Error Handling in Actions: If an action throws (like invalid data or unauthorized), Next.js by default will catch it and propagate to the UI (possibly by rendering an error boundary or showing nothing). We should catch expected errors and return a structured error object instead. For example, in addCamera, if not authorized, we might do return { error: 'Unauthorized' } instead of throwing, and then handle that in the UI (maybe show a toast). For form validation errors, we might return field-specific errors.
+- Advantages: Using server actions reduces the need for separate API route files for each form. It keeps the logic close to the UI. However, we must ensure no heavy computation in actions that would block responses too long (they run on serverless function possibly). For our use cases (DB writes, minor logic) it’s fine.
+
+- We will use server actions for:
+    - Admin: create/update/delete user, create/update/delete camera.
+    - Operator: acknowledge incident, perhaps adding notes if needed.
+    - Essentially any form where JavaScript is not strictly needed for the submission (since server actions can even work without JS if using plain form post).
+
+- For some interactions, we might still want to use fetch API (like clicking an acknowledge button not in a form context – though we can wrap it in a form with a hidden input if needed).
+
+## Rest API Endpoints:
+- We will implement RESTful endpoints under /api/* for key resources to allow programmatic access and possibly for future mobile app integration or testing via Postman.
+- Endpoints outline: 
+    - GET /api/cameras – returns list of cameras (auth required: admin or operator). Could support query param to filter by active, etc.
+	- POST /api/cameras – create a new camera (admin only). Expects JSON body with name, location, streamUrl. Returns created camera or error.
+	- GET /api/cameras/[id] – returns details of one camera (if needed).
+	- PUT /api/cameras/[id] – update camera (admin only).
+	- DELETE /api/cameras/[id] – delete camera (admin only, if allowed).
+	- GET /api/users – list users (admin only).
+	- POST /api/users – create user (admin only, similar to server action).
+	- PUT /api/users/[id] – update user (e.g., role or active status).
+	- GET /api/incidents – list incidents (for incident log). Supports filters via query (e.g., status=active or date range).
+	- GET /api/incidents/[id] – get details of one incident (could include sensor readings around that time, etc., future possibility).
+	- POST /api/incidents/[id]/acknowledge – mark incident acknowledged (operator or admin).
+	- Possibly GET /api/sensors – list sensors, and GET /api/sensors/[id]/readings – get recent readings (for charts if not already loaded via SSR).
+	- GET /api/alerts/live – This could be an endpoint to fetch current status (like all current sensor values and active alerts) in one go, if needed for initial data load via client. But since we do SSR, not necessary.
+- The route handlers will use Next.js Request/Response Web API (or can use NextResponse for convenience). 
+
+## Integrations:
+
+### NextAuth (Auth.js):
+- Integration with Next.js: we’ve configured it in /api/auth/[...nextauth]. We use the NextAuth adapter for Postgres or a custom flow as discussed.
+- If using the official adapter, we need to supply a DB connection. We could possibly use Drizzle’s connection for NextAuth as well, but the official adapter expects a Prisma or TypeORM or similar. There’s a community Postgres adapter (without Prisma) but not sure about Drizzle integration. Given complexity, we might do a simpler approach: use Credentials Provider without adapter, as outlined, using our users table.
+- Either way, NextAuth requires minimal integration beyond config. We will test it to ensure sessions work.
+- NextAuth will set a cookie named next-auth.session-token (for example) if using DB sessions or just next-auth.session-token containing JWT if not. We’ll ensure the domain and secure flags are correct (default is secure in production).
+- We’ll integrate NextAuth’s CSRF and secure cookie mechanism by default, so any authentication API calls are protected. This is largely handled by NextAuth internally
+
+### Framer Motion (Animations): 
+- Not exactly a backend integration, but a library integration in frontend for animations. We’ll use it to enhance UX:
+- Example: Using AnimatePresence and <motion.div> to animate component mount/unmount. For instance, the alert toast can slide in from the side.
+- We’ll integrate by installing framer-motion package and then using it in client components. Need to ensure those components are marked 'use client' because framer-motion will manipulate DOM.
+- Code convention: small animations (like button hover effects) might just use CSS or tailwind classes. Framer is for bigger things like transitions, drag (if needed), etc.
+- We must be mindful that heavy use of animations doesn’t degrade performance, especially with lots of data updating (we might not animate every sensor point on a chart if data is streaming quickly, perhaps just let the chart library handle it).
+- There’s no heavy challenge here, just ensure to wrap conditional renders properly so animations behave (e.g., when removing an alert from list, use AnimatePresence to animate it out).
+
+# 5 - Design System and Component Architecture
+FireSense’s frontend will adhere to a consistent design system leveraging Tailwind CSS utility classes, pre-built accessible components from Shadcn/UI, and animations from Framer Motion. The goal is a cohesive UI that is easy to maintain and extend.
+
+## Design System Principles
+- Consistency: We use a centralized style guide (implicitly enforced by Tailwind config and Shadcn components). Colors, typography, spacing should be uniform across the app. Tailwind’s design tokens (in tailwind.config.js) will define our color palette (perhaps a theme with primary color, danger color for alerts, etc.), font family (maybe a clean sans-serif for modern UI), and breakpoints for responsiveness.
+
+- Utility-first Styling: Tailwind CSS allows applying styles via class names (e.g., px-4 py-2 bg-blue-600 text-white rounded). This makes it quick to style components without leaving JSX. We will use Tailwind extensively for layout (flex, grid, padding, margins) and also for conditional styling (like hidden md:block to hide/show based on screen size). This keeps CSS manageable – mostly in the form of utility classes rather than separate CSS files. We will, however, have some global CSS for things like scrollbar styles or custom keyframe animations if needed.
+
+- Shadcn/UI Components: Shadcn/UI provides a library of Radix UI-based components styled with Tailwind. We will utilize these for common UI patterns:
+    - Form controls: inputs, checkboxes, switches, selects – for consistent styling and accessibility (Radix ensures proper focus handling, keyboard nav, etc.).
+    - Dialogs/Modals: e.g., confirm deletion modal using Shadcn’s Dialog.
+    - Dropdown Menu: for profile menu or context menus.
+    - Toast: for notifications (like the alert notifications, or success messages). Shadcn’s toast utility (which uses Radix Toast or an external library like sonner integrated) will be used to show transient messages. We’ll embed this in our root layout so that any part of the app can spawn a toast.
+    - Table: Shadcn has a Table component with styling for head, rows, etc., which we can use in Incident Log and User list to have a nice looking table without custom CSS.
+    - Tabs, Accordion, etc.: If needed (maybe not initially, but possibly for organizing info or filters).
+    - Using Shadcn’s components means we run a CLI to add the component code to our components/ui directory. For example, after running shadcn add button, we have components/ui/button.tsx which exports a Tailwind-styled button component ￼. We will do this for all needed components up front or as needed.
+    - We will keep these base components unmodified except for theme adjustments (like if we want to tweak colors or sizes, we do it via Tailwind classes or CSS variables).
+- Custom Components: In addition to base UI components, we create higher-level components specific to our app:
+    - Layout Components: e.g., Navbar (top navigation bar with app title, user menu), Sidebar (for admin pages navigation), DashboardLayout if needed. These ensure a consistent frame around pages.
+    - Domain Components:
+        - CameraFeedCard: uses a combination of a video element and some overlay text, styled as a card (Tailwind utilities and perhaps using a Shadcn Card component as wrapper).
+        - SensorGauge: maybe a circular progress indicator for e.g. gas levels (could use an SVG or canvas library, or simply a styled div). If a library is needed for fancy gauges, we might include it, but probably a simpler representation is fine.
+        - AlertToastContent: custom content to show in a toast for alerts (could include a button to acknowledge right from the toast).
+        - IncidentRow: a sub-component for incident log row rendering, perhaps to encapsulate how we format date and status pill (like a colored badge “Acknowledged”/“Active”).
+        - UserForm, CameraForm for the modals or sections to add/edit entries.
+
+- We will ensure these are built using the primitives from Shadcn as much as possible. For example, if confirming deletion, use <Dialog> from Shadcn, and inside it maybe a <Dialog.Header> and <Dialog.Footer> with our buttons (which are Shadcn <Button>).
+
+- Iconography: We will likely need icons (for camera, sensor, edit, delete, etc.). Shadcn suggests using Lucide icons library. We can install lucide-react and use icons as React components (e.g., <Camera className="w-4 h-4"/>). Alternatively, Heroicons or FontAwesome could be used. We’ll pick Lucide or Heroicons for a modern look. We ensure icons are used consistently (same set to avoid mix of styles).
+
+- Responsive Design: Tailwind breakpoints (sm, md, lg, xl) will be used to create a responsive layout. For example, the sidebar might collapse on smaller screens, or the camera grid changes number of columns. We’ll test on typical breakpoints: maybe design primarily for 1080p monitors (operators likely on desktops), but ensure it doesn’t break on tablets or small laptops.
+
+- Theming: If we want a dark mode (which might be useful in a security operations center at night), Shadcn and Tailwind can support it easily. Possibly implement a dark mode toggle. Shadcn’s docs have a dark mode setup using class="dark" on html and CSS variables. We could include that if needed. If not explicitly needed, we might still set it up for completeness and future use. It’s straightforward with Tailwind (dark: classes for variants).
+
+- Accessibility: We rely on Radix (via Shadcn) for accessible components (like proper ARIA attributes in modals, keyboard support in menus). We will also add semantic HTML where possible (use <table> for tabular data, headings, labels on form fields, etc.). Tailwind has sr-only class to hide elements visually but keep for screen readers (we can use that for any additional descriptions).
+
+- Component State Management: Many components will be simple and use local React state or props. For example:
+    - A modal open/close is often managed by useState in a parent component or using Radix’s controlled state. We might have a state like const [showAddUserModal, setShowAddUserModal] = useState(false) in the User page. Clicking “Add User” sets it true, which renders the .
+    - For forms, we might not need complex state if using plain form submission (because values go direct to server). But if we want instant feedback or to accumulate data before submit (like building a list), we’d manage that with useState or useReducer as needed.
+    - Where appropriate, lift state up: e.g., if multiple components need to know something (like an overall loading state or global error), we can put it in context or in a parent component state.
+
+# 6 - Authentification and Authorization Implementation
+Authentication is handled by NextAuth (Auth.js) integrated with our Next.js application, and authorization is enforced via user roles as described. Here we detail how to implement these in code and configuration:
+
+## NextAuth Setup 
+- In app/api/auth/[...nextauth]/route.ts, we configure NextAuth:
+    - Provide an array of Auth Providers. In our case, the primary provider will be Credentials for email/password, since this is an internal app (we don’t necessarily want third-party OAuth for security operators). 
+
+- Example Credentials provider configuration: 
+```
+import NextAuth, { AuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { verifyPassword } from "@/lib/auth"; // a helper using bcrypt
+import { db } from "@/db"; import { users } from "@/db/schema";
+
+export const authOptions: AuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
+  session: { strategy: 'jwt' },  // using JWT for session to include role easily
+  providers: [
+    CredentialsProvider({
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email", type: "text" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        if (!credentials) return null;
+        const user = await db.query.users.findFirst({ 
+           where: eq(users.email, credentials.email), 
+        });
+        if (!user) return null;
+        const pwValid = await verifyPassword(credentials.password, user.passwordHash);
+        if (!pwValid) return null;
+        if (!user.active) return null; // user disabled
+        // Return user object for session (including role)
+        return { id: user.id, name: user.name, email: user.email, role: user.role };
+      }
+    })
+  ],
+  callbacks: {
+    async jwt({ token, user }) {
+      // On login, user object is provided; on subsequent calls, just token
+      if (user) {
+        token.role = user.role;
+        token.uid = user.id;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (token) {
+        session.user.role = token.role;
+        session.user.id = token.uid;
+      }
+      return session;
+    }
+  },
+  events: {
+    async signIn({ user }) {
+      // Log successful login
+      await db.insert(auditLog).values({
+        userId: user.id, actionType: 'login', description: `${user.email} signed in`
+      });
+    }
+  }
+};
+
+const handler = NextAuth(authOptions);
+export { handler as GET, handler as POST };
+```
+- This setup uses JWT for session tokens (not storing sessions in DB). We embed role and uid in the JWT payload ￼, so the client session object has those. We mark the route handler as both GET and POST to handle both the initial GET (for pages) and POST (for sign-in submission) as required by NextAuth.
+- We specify NEXTAUTH_SECRET for signing the JWT and cookies
+- The authorize function checks the credentials against our users table using Drizzle query. We use a helper to verify the bcrypt hash. If valid, returns a user object containing at least an id and role. NextAuth then creates a token with that.
+- If the user is not active or not found, returns null (NextAuth will throw an error that can be handled in the UI, typically showing “Invalid credentials”).
+- The callbacks ensure every JWT and Session includes the role so we know the user’s role on the client and in middleware.
+- We added an event for signIn to log login in audit. We could similarly add an event for signOut if needed (e.g., log sign-outs).
+
+- Session Usage: On the client side, we use useSession() hook (from next-auth/react) in components to get the current user session. Example Nav bar: 
+```
+const { data: session } = useSession();
+if (session) console.log(session.user.role); 
+```
+- This will tell us if the user is admin to conditionally render admin links.
+- We will wrap our app in <SessionProvider> in the root layout (or in _app.js if using pages directory, but in App router, the provider can be put in a client component wrapper around the main layout).
+
+- Protected Pages with Middleware: As described, we implement middleware.ts to protect routes
+    - This ensures only admins go through to /admin, and only authenticated users reach the other protected pages (dashboard, incidents). We may allow the root (”/”) to redirect to dashboard if logged in, or to login if not.
+    - We included static assets and NextAuth routes in bypass.
+    - If unauthorized for admin, we rewrite to an /unauthorized page (we can make a simple page saying “You do not have access”). Alternatively, we could redirect to home and perhaps flash a message, but since we don’t have a global flash system aside from toast, a dedicated page is fine.
+    - Using getToken to parse JWT from cookie ￼ – this is efficient and doesn’t require a DB call since we chose JWT strategy.
+
+- Authorization in API routes / actions: 
+    - We cannot rely on middleware for API route protection because middleware only runs on Edge by default and might not block all (though our config does include /admin/:path* which covers /api/admin too if path matches). To be safe, inside each API handler or server action we do checks:
+        - Use getServerSession(authOptions) inside server functions to get session. (In App router, we use authOptions defined above to retrieve the session server-side.)
+        - For actions, as shown in addCamera example, check session.user.role.
+        - For API route handlers, similar check and return 401/403 if not allowed.
+    - This double-check is important for any non-UI usage of endpoints.
+
+- Password Security: We use bcrypt with a decent cost factor (say 10) for hashing passwords. Ensure to salt properly (bcrypt does internally). We’ll use a library like bcryptjs or node:bcrypt. When creating a user, hash password; when verifying, compare. Never store plaintext. Also possibly enforce a strong password policy for admins when they create users (min length, mix of characters).
+
+- Forgot Password / Password Change: Not explicitly in scope, but important in a real system. Since we don’t have user self-service flows described, possibly not needed. If needed, we could implement an admin reset password feature (admin sets a new password for user if they forget). That can be part of user edit (set new temp password). We would handle that similarly to creation (hash new password and update).
+
+- Multi-factor auth: Not in the scope of this project. 
