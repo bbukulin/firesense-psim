@@ -35,7 +35,7 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="flex min-h-full flex-1 items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+    <div className="flex min-h-full flex-1 items-center justify-center px-4 py-12 sm:px-6 lg:px-8 font-['Inter','IBM Plex Sans','Roboto Slab',sans-serif]">
       <div className="w-full max-w-xs space-y-8">
         <div>
           <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
@@ -54,7 +54,7 @@ export default function AccountPage() {
                 placeholder="Username"
                 autoComplete="username"
                 aria-label="Username"
-                className="block w-full rounded-t-md bg-white dark:bg-gray-800 px-3 py-2.5 text-base text-gray-900 dark:text-white outline-1 -outline-offset-1 outline-gray-300 dark:outline-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:relative focus:outline-2 focus:-outline-offset-2 focus:outline-amber-600 dark:focus:outline-amber-500 sm:text-sm"
+                className="block w-full rounded-t-md bg-white dark:bg-[#181A20] px-3 py-2.5 text-base text-gray-900 dark:text-white outline-1 -outline-offset-1 outline-gray-300 dark:outline-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:relative focus:outline-2 focus:-outline-offset-2 focus:outline-amber-600 dark:focus:outline-[#b6720d] transition-colors duration-200 dark:focus:border-[#b6720d] dark:hover:border-[#b6720d] sm:text-sm font-medium"
               />
             </div>
             <div className="-mt-px">
@@ -66,7 +66,7 @@ export default function AccountPage() {
                 placeholder="Password"
                 autoComplete="current-password"
                 aria-label="Password"
-                className="block w-full rounded-b-md bg-white dark:bg-gray-800 px-3 py-2.5 text-base text-gray-900 dark:text-white outline-1 -outline-offset-1 outline-gray-300 dark:outline-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:relative focus:outline-2 focus:-outline-offset-2 focus:outline-amber-600 dark:focus:outline-amber-500 sm:text-sm"
+                className="block w-full rounded-b-md bg-white dark:bg-[#181A20] px-3 py-2.5 text-base text-gray-900 dark:text-white outline-1 -outline-offset-1 outline-gray-300 dark:outline-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:relative focus:outline-2 focus:-outline-offset-2 focus:outline-amber-600 dark:focus:outline-[#b6720d] transition-colors duration-200 dark:focus:border-[#b6720d] dark:hover:border-[#b6720d] sm:text-sm font-medium"
               />
             </div>
           </div>
@@ -80,7 +80,7 @@ export default function AccountPage() {
           <div>
             <button
               type="submit"
-              className="flex w-full justify-center rounded-md bg-amber-600 dark:bg-amber-500 px-3 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 dark:hover:bg-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600 dark:focus-visible:outline-amber-500"
+              className="flex w-full justify-center rounded-md bg-amber-600 dark:bg-[#b6720d] px-3 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 dark:hover:bg-[#a05d00] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600 dark:focus-visible:outline-[#b6720d] transition-colors duration-200"
             >
               Authenticate
             </button>

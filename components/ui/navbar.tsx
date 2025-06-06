@@ -4,14 +4,26 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Sun, Moon, Monitor } from "lucide-react"
 import { useEffect, useState } from "react"
+import { motion } from "framer-motion"
 
 export function Navbar() {
   return (
-    <nav className="border-b">
+    <motion.nav 
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      className="border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-50"
+    >
       <div className="flex h-16 items-center px-4 container mx-auto">
-        <Link href="/" className="font-bold text-xl">
-          FireSense
-        </Link>
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
+        >
+          <Link href="/" className="font-bold text-xl bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+            FireSense
+          </Link>
+        </motion.div>
         <div className="ml-auto flex items-center space-x-4">
           <ThemeToggle />
           <Button variant="ghost" asChild>
@@ -19,7 +31,7 @@ export function Navbar() {
           </Button>
         </div>
       </div>
-    </nav>
+    </motion.nav>
   )
 }
 
@@ -59,19 +71,29 @@ function ThemeToggle() {
   ] as const;
 
   return (
-    <div className="flex items-center bg-black/70 border border-white/10 rounded-full px-1.5 py-0.5 gap-1.5">
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      className="flex items-center bg-background/50 border border-border/50 rounded-full px-1.5 py-0.5 gap-1.5"
+    >
       {options.map(({ value, icon: Icon, label }) => (
-        <button
+        <motion.button
           key={value}
           aria-label={label}
           className={`size-7 flex items-center justify-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50
-            ${theme === value ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5'}`}
+            ${theme === value 
+              ? 'bg-primary/10 text-primary dark:bg-primary/20' 
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}
           onClick={() => setTheme(value)}
           type="button"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
         >
           <Icon className="size-4" />
-        </button>
+        </motion.button>
       ))}
-    </div>
+    </motion.div>
   );
 } 
