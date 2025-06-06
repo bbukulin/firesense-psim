@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1749223633082,
+      "tag": "0000_short_the_renegades",
+      "breakpoints": true
+    }
+  ]
+}
