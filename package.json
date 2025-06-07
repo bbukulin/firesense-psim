@@ -9,7 +9,7 @@
     "lint": "next lint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:seed": "npx bun db/seed.ts"
+    "db:seed": "npx bun db/seed/index.ts"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.11",

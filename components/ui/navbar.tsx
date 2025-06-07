@@ -2,9 +2,9 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Sun, Moon, Monitor, LogOut } from "lucide-react"
+import { Sun, Moon, Monitor, LogOut, Menu, X } from "lucide-react"
 import { useEffect, useState } from "react"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { useSession, signOut } from "next-auth/react"
 import { usePathname, useRouter } from "next/navigation"
 
@@ -12,6 +12,7 @@ export function Navbar() {
   const { data: session } = useSession()
   const pathname = usePathname()
   const router = useRouter()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   const isActive = (path: string) => pathname === path
 
@@ -19,6 +20,13 @@ export function Navbar() {
     await signOut({ redirect: false })
     router.push('/')
   }
+
+  const navLinks = session ? [
+    { href: '/dashboard', label: 'Dashboard' },
+    { href: '/monitoring', label: 'Monitoring' },
+    { href: '/incidents', label: 'Incidents' },
+    ...(session.user.role === 'admin' ? [{ href: '/admin', label: 'Admin' }] : [])
+  ] : []
 
   return (
     <nav className="border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
@@ -29,38 +37,19 @@ export function Navbar() {
           </Link>
         </div>
 
+        {/* Desktop Navigation */}
         {session && (
-          <div className="ml-6 flex items-center space-x-4">
-            <Button 
-              variant="ghost" 
-              asChild
-              className={isActive('/dashboard') ? 'text-amber-500 hover:text-amber-500 hover:bg-amber-500/10' : ''}
-            >
-              <Link href="/dashboard">Dashboard</Link>
-            </Button>
-            <Button 
-              variant="ghost" 
-              asChild
-              className={isActive('/monitoring') ? 'text-amber-500 hover:text-amber-500 hover:bg-amber-500/10' : ''}
-            >
-              <Link href="/monitoring">Monitoring</Link>
-            </Button>
-            <Button 
-              variant="ghost" 
-              asChild
-              className={isActive('/incidents') ? 'text-amber-500 hover:text-amber-500 hover:bg-amber-500/10' : ''}
-            >
-              <Link href="/incidents">Incidents</Link>
-            </Button>
-            {session.user.role === 'admin' && (
+          <div className="hidden md:flex ml-6 items-center space-x-4">
+            {navLinks.map((link) => (
               <Button 
+                key={link.href}
                 variant="ghost" 
                 asChild
-                className={isActive('/admin') ? 'text-amber-500 hover:text-amber-500 hover:bg-amber-500/10' : ''}
+                className={isActive(link.href) ? 'text-amber-500 hover:text-amber-500 hover:bg-amber-500/10' : ''}
               >
-                <Link href="/admin">Admin</Link>
+                <Link href={link.href}>{link.label}</Link>
               </Button>
-            )}
+            ))}
           </div>
         )}
 
@@ -76,18 +65,68 @@ export function Navbar() {
             </Link>
           </Button>
           {session && (
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="size-8"
-              onClick={handleSignOut}
-              aria-label="Sign out"
-            >
-              <LogOut className="size-4" />
-            </Button>
+            <>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="size-8 hidden md:flex"
+                onClick={handleSignOut}
+                aria-label="Sign out"
+              >
+                <LogOut className="size-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="size-8 md:hidden"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                aria-label="Toggle menu"
+              >
+                {isMobileMenuOpen ? <X className="size-4" /> : <Menu className="size-4" />}
+              </Button>
+            </>
           )}
         </div>
       </div>
+
+      {/* Mobile Navigation */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden border-t border-border/40"
+          >
+            <div className="container mx-auto px-4 py-4 space-y-2">
+              {navLinks.map((link) => (
+                <Button
+                  key={link.href}
+                  variant="ghost"
+                  asChild
+                  className={`w-full justify-start ${isActive(link.href) ? 'text-amber-500 hover:text-amber-500 hover:bg-amber-500/10' : ''}`}
+                >
+                  <Link href={link.href} onClick={() => setIsMobileMenuOpen(false)}>
+                    {link.label}
+                  </Link>
+                </Button>
+              ))}
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={() => {
+                  handleSignOut()
+                  setIsMobileMenuOpen(false)
+                }}
+              >
+                <LogOut className="size-4 mr-2" />
+                Sign out
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   )
 }
