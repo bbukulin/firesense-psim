@@ -5,6 +5,7 @@ import TemperatureChart from "./_components/temperature-chart"
 import SmokeChart from "./_components/smoke-chart"
 import GasChart from "./_components/gas-chart"
 import IncidentLogsTable from "./_components/incident-logs-table"
+import SensorStatus from "./_components/sensor-status"
 
 export default async function DashboardPage() {
   return (
@@ -26,68 +27,12 @@ export default async function DashboardPage() {
           </Card>
 
           {/* Sensor Status Overview */}
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            <Card>
-              <CardHeader>
-                <CardTitle>Temperature Sensors</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Server Room</span>
-                    <span className="font-medium">72°C</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Main Floor</span>
-                    <span className="font-medium">24°C</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Smoke Detectors</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Server Room</span>
-                    <span className="font-medium text-green-500">Normal</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Main Floor</span>
-                    <span className="font-medium text-green-500">Normal</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Gas Sensors</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Server Room</span>
-                    <span className="font-medium">350 ppm</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Main Floor</span>
-                    <span className="font-medium">280 ppm</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <SensorStatus />
 
           {/* Sensor Data Visualizations */}
           <div className="mt-1 flex flex-col gap-4">
             <Card>
-              <CardHeader>
-                <CardTitle>Temperature Trend</CardTitle>
-              </CardHeader>
+              
               <CardContent>
                 <TemperatureChart />
               </CardContent>
