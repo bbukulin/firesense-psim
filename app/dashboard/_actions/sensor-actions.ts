@@ -92,4 +92,78 @@ export async function getTemperatureReadingsAction() {
       message: 'Failed to fetch temperature readings',
     }
   }
+}
+
+export async function getSmokeReadingsAction() {
+  try {
+    const readings = await db
+      .select({
+        timestamp: sensorReadings.timestamp,
+        value: sensorReadings.value,
+        smoke_detected: sensorReadings.smoke_detected,
+        sensorId: sensorReadings.sensor_id,
+        sensorName: sensors.name,
+        location: sensors.location,
+      })
+      .from(sensorReadings)
+      .innerJoin(sensors, eq(sensorReadings.sensor_id, sensors.id))
+      .where(eq(sensors.type, 'smoke'))
+      .orderBy(desc(sensorReadings.timestamp))
+
+    // Format the data for the chart
+    const formattedData = readings.map(reading => ({
+      time: new Date(reading.timestamp).toLocaleTimeString(),
+      value: reading.smoke_detected ? 1 : 0,
+      smoke_detected: reading.smoke_detected,
+      sensorName: reading.sensorName,
+      location: reading.location,
+    }))
+
+    return {
+      isSuccess: true,
+      data: formattedData,
+    }
+  } catch (error) {
+    console.error('Error fetching smoke readings:', error)
+    return {
+      isSuccess: false,
+      message: 'Failed to fetch smoke readings',
+    }
+  }
+}
+
+export async function getGasReadingsAction() {
+  try {
+    const readings = await db
+      .select({
+        timestamp: sensorReadings.timestamp,
+        value: sensorReadings.value,
+        sensorId: sensorReadings.sensor_id,
+        sensorName: sensors.name,
+        location: sensors.location,
+      })
+      .from(sensorReadings)
+      .innerJoin(sensors, eq(sensorReadings.sensor_id, sensors.id))
+      .where(eq(sensors.type, 'gas'))
+      .orderBy(desc(sensorReadings.timestamp))
+
+    // Format the data for the chart
+    const formattedData = readings.map(reading => ({
+      time: new Date(reading.timestamp).toLocaleTimeString(),
+      value: Number(reading.value),
+      sensorName: reading.sensorName,
+      location: reading.location,
+    }))
+
+    return {
+      isSuccess: true,
+      data: formattedData,
+    }
+  } catch (error) {
+    console.error('Error fetching gas readings:', error)
+    return {
+      isSuccess: false,
+      message: 'Failed to fetch gas readings',
+    }
+  }
 } 

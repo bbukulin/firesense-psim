@@ -32,27 +32,22 @@ export default async function DashboardPage() {
           {/* Sensor Data Visualizations */}
           <div className="mt-1 flex flex-col gap-4">
             <Card>
-              
               <CardContent>
                 <TemperatureChart />
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Smoke Detection</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <SmokeChart />
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Gas Levels</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <GasChart />
-              </CardContent>
-            </Card>
+            <div className="flex flex-col md:flex-row gap-4">
+              <Card className="flex-1">
+                <CardContent>
+                  <SmokeChart />
+                </CardContent>
+              </Card>
+              <Card className="flex-1">
+                <CardContent>
+                  <GasChart />
+                </CardContent>
+              </Card>
+            </div>
             {/* Incident Logs Table */}
             <Card>
               <CardHeader>
