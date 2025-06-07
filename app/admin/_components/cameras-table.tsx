@@ -19,9 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import AddUserDialog from "./add-user-dialog"
-import { User } from "@/db/schema/users-schema"
-import { getUsers, deleteUser } from "../_actions/users"
+import { Camera } from "@/db/schema/cameras-schema"
 import { toast } from "sonner"
 import { Pencil, Trash2 } from "lucide-react"
 import {
@@ -34,19 +32,32 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import AddCameraDialog from "@/app/admin/_components/add-camera-dialog"
+import { getCameras, deleteCamera } from "../_actions/cameras"
 
-const columns: ColumnDef<User>[] = [
+const columns: ColumnDef<Camera>[] = [
   {
-    accessorKey: "email",
-    header: "Email",
-  },
-  {
-    accessorKey: "username",
+    accessorKey: "name",
     header: "Name",
   },
   {
-    accessorKey: "role",
-    header: "Role",
+    accessorKey: "location",
+    header: "Location",
+  },
+  {
+    accessorKey: "streamUrl",
+    header: "Stream URL",
+    cell: ({ row }) => {
+      const url = row.getValue("streamUrl") as string
+      return url.length > 30 ? `${url.substring(0, 30)}...` : url
+    },
+  },
+  {
+    accessorKey: "active",
+    header: "Status",
+    cell: ({ row }) => {
+      return row.getValue("active") ? "Active" : "Inactive"
+    },
   },
   {
     accessorKey: "createdAt",
@@ -57,66 +68,17 @@ const columns: ColumnDef<User>[] = [
   },
 ]
 
-export function UsersTable() {
+export function CamerasTable() {
   const [sorting, setSorting] = useState<SortingState>([])
-  const [open, setOpen] = useState(false)
-  const [users, setUsers] = useState<User[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [selectedUser, setSelectedUser] = useState<User | undefined>()
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [userToDelete, setUserToDelete] = useState<User | null>(null)
-
-  const fetchUsers = async () => {
-    try {
-      const result = await getUsers()
-      if (result.error) {
-        setError(result.error)
-      } else {
-        setUsers(result.data || [])
-      }
-    } catch (err) {
-      setError("Failed to fetch users")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchUsers()
-  }, [])
-
-  const handleEdit = (user: User) => {
-    setSelectedUser(user)
-    setOpen(true)
-  }
-
-  const handleDelete = (user: User) => {
-    setUserToDelete(user)
-    setDeleteDialogOpen(true)
-  }
-
-  const confirmDelete = async () => {
-    if (!userToDelete) return
-
-    try {
-      const result = await deleteUser(userToDelete.id)
-      if (result.error) {
-        toast.error(result.error)
-      } else {
-        toast.success("User deleted successfully")
-        fetchUsers()
-      }
-    } catch (error) {
-      toast.error("Failed to delete user")
-    } finally {
-      setDeleteDialogOpen(false)
-      setUserToDelete(null)
-    }
-  }
+  const [cameras, setCameras] = useState<Camera[]>([])
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [cameraToDelete, setCameraToDelete] = useState<Camera | null>(null)
+  const [cameraToEdit, setCameraToEdit] = useState<Camera | undefined>(undefined)
+  const [isLoading, setIsLoading] = useState(true)
 
   const table = useReactTable({
-    data: users,
+    data: cameras,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -127,42 +89,74 @@ export function UsersTable() {
     },
   })
 
-  if (loading) {
-    return <div>Loading users...</div>
+  useEffect(() => {
+    async function loadCameras() {
+      try {
+        const camerasList = await getCameras()
+        setCameras(camerasList)
+      } catch (error) {
+        toast.error("Failed to load cameras")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadCameras()
+  }, [])
+
+  const handleDelete = async (camera: Camera) => {
+    setCameraToDelete(camera)
+    setIsDeleteDialogOpen(true)
   }
 
-  if (error) {
-    return <div className="text-red-500">Error: {error}</div>
+  const confirmDelete = async () => {
+    if (!cameraToDelete) return
+
+    try {
+      await deleteCamera(cameraToDelete.id)
+      setCameras(cameras.filter((c) => c.id !== cameraToDelete.id))
+      toast.success("Camera deleted successfully")
+    } catch (error) {
+      toast.error("Failed to delete camera")
+    } finally {
+      setIsDeleteDialogOpen(false)
+      setCameraToDelete(null)
+    }
+  }
+
+  const handleEdit = (camera: Camera) => {
+    setCameraToEdit(camera)
+    setIsAddDialogOpen(true)
+  }
+
+  if (isLoading) {
+    return <div>Loading cameras...</div>
   }
 
   return (
     <div className="space-y-3 sm:space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
-        <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight">Users</h2>
+        <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight">Cameras</h2>
         <Button onClick={() => {
-          setSelectedUser(undefined)
-          setOpen(true)
-        }}>
-          Add User
-        </Button>
+          setCameraToEdit(undefined)
+          setIsAddDialogOpen(true)
+        }}>Add Camera</Button>
       </div>
+
       <div className="rounded-md border overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id} className="whitespace-nowrap">
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  )
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id} className="whitespace-nowrap">
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
                 <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
             ))}
@@ -208,13 +202,14 @@ export function UsersTable() {
                   colSpan={columns.length + 1}
                   className="h-24 text-center"
                 >
-                  No users found.
+                  No cameras found.
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
+
       <div className="flex items-center justify-end space-x-2">
         <Button
           variant="outline"
@@ -233,19 +228,28 @@ export function UsersTable() {
           Next
         </Button>
       </div>
-      <AddUserDialog 
-        open={open} 
-        onOpenChange={setOpen} 
-        onUserAdded={fetchUsers}
-        user={selectedUser}
+
+      <AddCameraDialog
+        open={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        onCameraAdded={(newCamera: Camera) => {
+          setCameras([...cameras, newCamera])
+        }}
+        onCameraUpdated={(updatedCamera: Camera) => {
+          setCameras(cameras.map((c) => 
+            c.id === updatedCamera.id ? updatedCamera : c
+          ))
+        }}
+        camera={cameraToEdit}
       />
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the user
-              account.
+              This action cannot be undone. This will permanently delete the
+              camera.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

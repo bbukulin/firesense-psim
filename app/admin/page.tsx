@@ -1,14 +1,18 @@
 "use server"
 
 import { UsersTable } from "./_components/users-table"
+import { CamerasTable } from "./_components/cameras-table"
 
 export default async function AdminPage() {
   return (
-    <div className="container mx-auto px-4 py-4 sm:py-6 md:py-8">
-      <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Admin Panel</h1>
-      <div className="grid gap-4 sm:gap-6">
-        <div className="p-4 sm:p-6 bg-card rounded-lg border">
+    <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4 md:py-6 lg:py-8">
+      <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 md:mb-6">Admin Panel</h1>
+      <div className="grid gap-3 sm:gap-4 md:gap-6">
+        <div className="p-3 sm:p-4 md:p-6 bg-card rounded-lg border overflow-hidden">
           <UsersTable />
+        </div>
+        <div className="p-3 sm:p-4 md:p-6 bg-card rounded-lg border overflow-hidden">
+          <CamerasTable />
         </div>
       </div>
     </div>
