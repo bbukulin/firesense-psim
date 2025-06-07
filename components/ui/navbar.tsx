@@ -2,17 +2,23 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Sun, Moon, Monitor } from "lucide-react"
+import { Sun, Moon, Monitor, LogOut } from "lucide-react"
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import { useSession } from "next-auth/react"
-import { usePathname } from "next/navigation"
+import { useSession, signOut } from "next-auth/react"
+import { usePathname, useRouter } from "next/navigation"
 
 export function Navbar() {
   const { data: session } = useSession()
   const pathname = usePathname()
+  const router = useRouter()
 
   const isActive = (path: string) => pathname === path
+
+  const handleSignOut = async () => {
+    await signOut({ redirect: false })
+    router.push('/')
+  }
 
   return (
     <nav className="border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
@@ -60,15 +66,24 @@ export function Navbar() {
 
         <div className="ml-auto flex items-center space-x-4">
           <ThemeToggle />
+          <Button 
+            variant="outline" 
+            asChild
+            className={isActive('/account') ? 'text-amber-500 border-amber-500 hover:text-amber-500 hover:bg-amber-500/10' : ''}
+          >
+            <Link href="/account">
+              {session ? (session.user.role === 'admin' ? 'Admin' : 'Operator') : 'Account'}
+            </Link>
+          </Button>
           {session && (
             <Button 
               variant="outline" 
-              asChild
-              className={isActive('/account') ? 'text-amber-500 border-amber-500 hover:text-amber-500 hover:bg-amber-500/10' : ''}
+              size="icon" 
+              className="size-8"
+              onClick={handleSignOut}
+              aria-label="Sign out"
             >
-              <Link href="/account">
-                {session.user.role === 'admin' ? 'Admin' : 'Operator'}
-              </Link>
+              <LogOut className="size-4" />
             </Button>
           )}
         </div>
