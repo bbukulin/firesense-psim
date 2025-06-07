@@ -5,33 +5,75 @@ import { Button } from "@/components/ui/button"
 import { Sun, Moon, Monitor } from "lucide-react"
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
+import { useSession } from "next-auth/react"
+import { usePathname } from "next/navigation"
 
 export function Navbar() {
+  const { data: session } = useSession()
+  const pathname = usePathname()
+
+  const isActive = (path: string) => pathname === path
+
   return (
-    <motion.nav 
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-50"
-    >
+    <nav className="border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="flex h-16 items-center px-4 container mx-auto">
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          transition={{ type: "spring", stiffness: 400, damping: 17 }}
-        >
-          <Link href="/" className="font-bold text-xl bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+        <div>
+          <Link href="/" className="font-medium text-lg text-foreground">
             FireSense
           </Link>
-        </motion.div>
+        </div>
+
+        {session && (
+          <div className="ml-6 flex items-center space-x-4">
+            <Button 
+              variant="ghost" 
+              asChild
+              className={isActive('/dashboard') ? 'text-amber-500 hover:text-amber-500 hover:bg-amber-500/10' : ''}
+            >
+              <Link href="/dashboard">Dashboard</Link>
+            </Button>
+            <Button 
+              variant="ghost" 
+              asChild
+              className={isActive('/monitoring') ? 'text-amber-500 hover:text-amber-500 hover:bg-amber-500/10' : ''}
+            >
+              <Link href="/monitoring">Monitoring</Link>
+            </Button>
+            <Button 
+              variant="ghost" 
+              asChild
+              className={isActive('/incidents') ? 'text-amber-500 hover:text-amber-500 hover:bg-amber-500/10' : ''}
+            >
+              <Link href="/incidents">Incidents</Link>
+            </Button>
+            {session.user.role === 'admin' && (
+              <Button 
+                variant="ghost" 
+                asChild
+                className={isActive('/admin') ? 'text-amber-500 hover:text-amber-500 hover:bg-amber-500/10' : ''}
+              >
+                <Link href="/admin">Admin</Link>
+              </Button>
+            )}
+          </div>
+        )}
+
         <div className="ml-auto flex items-center space-x-4">
           <ThemeToggle />
-          <Button variant="ghost" asChild>
-            <Link href="/account">Account</Link>
-          </Button>
+          {session && (
+            <Button 
+              variant="outline" 
+              asChild
+              className={isActive('/account') ? 'text-amber-500 border-amber-500 hover:text-amber-500 hover:bg-amber-500/10' : ''}
+            >
+              <Link href="/account">
+                {session.user.role === 'admin' ? 'Admin' : 'Operator'}
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
-    </motion.nav>
+    </nav>
   )
 }
 
