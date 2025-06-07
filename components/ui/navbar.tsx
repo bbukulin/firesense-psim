@@ -36,12 +36,20 @@ export function Navbar() {
 }
 
 function ThemeToggle() {
-  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>(() => {
-    if (typeof window === 'undefined') return 'system';
-    return (localStorage.getItem('theme') as 'light' | 'dark' | 'system') || 'system';
-  });
+  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | 'system';
+    if (savedTheme) {
+      setTheme(savedTheme);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    
     const root = window.document.documentElement;
     if (theme === 'system') {
       const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -51,24 +59,43 @@ function ThemeToggle() {
       root.classList.toggle('dark', theme === 'dark');
       localStorage.setItem('theme', theme);
     }
-  }, [theme]);
+  }, [theme, mounted]);
 
   // Listen to system theme changes if in system mode
   useEffect(() => {
-    if (theme !== 'system') return;
+    if (!mounted || theme !== 'system') return;
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
     const handler = (e: MediaQueryListEvent) => {
       window.document.documentElement.classList.toggle('dark', e.matches);
     };
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
-  }, [theme]);
+  }, [theme, mounted]);
 
   const options = [
     { value: 'light', icon: Sun, label: 'Light' },
     { value: 'system', icon: Monitor, label: 'System' },
     { value: 'dark', icon: Moon, label: 'Dark' },
   ] as const;
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center bg-background/50 border border-border/50 rounded-full px-1.5 py-0.5 gap-1.5">
+        {options.map(({ value, icon: Icon, label }) => (
+          <button
+            key={value}
+            aria-label={label}
+            className={`size-7 flex items-center justify-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 text-muted-foreground`}
+            type="button"
+            tabIndex={-1}
+            disabled
+          >
+            <Icon className="size-4" />
+          </button>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <motion.div 

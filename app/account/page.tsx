@@ -4,94 +4,84 @@ import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
-export default function AccountPage() {
+export default function Account() {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setError(null)
-
     const formData = new FormData(e.currentTarget)
-    const username = formData.get("username") as string
-    const password = formData.get("password") as string
-
+    
     try {
-      const result = await signIn("credentials", {
-        username,
-        password,
+      const res = await signIn('credentials', {
+        email: formData.get('email'),
+        password: formData.get('password'),
         redirect: false,
       })
 
-      if (result?.error) {
-        setError("Invalid credentials")
+      if (res?.error) {
+        setError('Invalid credentials')
         return
       }
 
-      router.push("/dashboard")
+      router.push('/dashboard')
+      router.refresh()
     } catch (error) {
-      setError("An error occurred. Please try again.")
+      setError('An error occurred. Please try again.')
     }
   }
 
   return (
-    <div className="flex min-h-full flex-1 items-center justify-center px-4 py-12 sm:px-6 lg:px-8 font-['Inter','IBM Plex Sans','Roboto Slab',sans-serif]">
-      <div className="w-full max-w-xs space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-background transition-colors duration-300">
+      <div className="max-w-md w-full space-y-8 p-8 bg-card rounded-lg shadow transition-colors duration-300">
         <div>
-          <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-            Sign in to your account
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-card-foreground font-sans">
+            Sign in to FireSense
           </h2>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <div className="col-span-2">
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="bg-destructive/10 text-destructive p-3 rounded transition-colors duration-300">
+              {error}
+            </div>
+          )}
+          <div className="space-y-6">
+            <div className="flex flex-col space-y-2">
+              <label htmlFor="email" className="text-sm font-medium text-card-foreground mb-1 font-sans">
+                Email address
+              </label>
               <input
-                id="username"
-                name="username"
-                type="text"
+                id="email"
+                name="email"
+                type="email"
                 required
-                placeholder="Username"
-                autoComplete="username"
-                aria-label="Username"
-                className="block w-full rounded-t-md bg-white dark:bg-[#181A20] px-3 py-2.5 text-base text-gray-900 dark:text-white outline-1 -outline-offset-1 outline-gray-300 dark:outline-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:relative focus:outline-2 focus:-outline-offset-2 focus:outline-amber-600 dark:focus:outline-[#b6720d] transition-colors duration-200 dark:focus:border-[#b6720d] dark:hover:border-[#b6720d] sm:text-sm font-medium"
+                className="appearance-none block w-full px-4 py-3 border border-input placeholder-muted-foreground text-card-foreground bg-background rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-base font-sans transition-colors duration-300 shadow-sm"
+                placeholder="Enter your email"
               />
             </div>
-            <div className="-mt-px">
+            <div className="flex flex-col space-y-2">
+              <label htmlFor="password" className="text-sm font-medium text-card-foreground mb-1 font-sans">
+                Password
+              </label>
               <input
                 id="password"
                 name="password"
                 type="password"
                 required
-                placeholder="Password"
-                autoComplete="current-password"
-                aria-label="Password"
-                className="block w-full rounded-b-md bg-white dark:bg-[#181A20] px-3 py-2.5 text-base text-gray-900 dark:text-white outline-1 -outline-offset-1 outline-gray-300 dark:outline-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:relative focus:outline-2 focus:-outline-offset-2 focus:outline-amber-600 dark:focus:outline-[#b6720d] transition-colors duration-200 dark:focus:border-[#b6720d] dark:hover:border-[#b6720d] sm:text-sm font-medium"
+                className="appearance-none block w-full px-4 py-3 border border-input placeholder-muted-foreground text-card-foreground bg-background rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-base font-sans transition-colors duration-300 shadow-sm"
+                placeholder="Enter your password"
               />
             </div>
           </div>
-
-          {error && (
-            <div className="text-sm text-red-600 dark:text-red-400 text-center">
-              {error}
-            </div>
-          )}
-
           <div>
             <button
               type="submit"
-              className="flex w-full justify-center rounded-md bg-amber-600 dark:bg-[#b6720d] px-3 py-2.5 text-sm font-semibold text-white hover:bg-amber-500 dark:hover:bg-[#a05d00] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600 dark:focus-visible:outline-[#b6720d] transition-colors duration-200"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-base font-semibold rounded-lg text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary font-sans transition-colors duration-300 shadow-md"
             >
-              Authenticate
+              Sign in
             </button>
           </div>
         </form>
-
-        <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-          <a href="#" className="font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-500 dark:hover:text-amber-300">
-            Demo Account
-          </a>
-        </p>
       </div>
     </div>
   )
