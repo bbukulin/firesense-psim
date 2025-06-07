@@ -1,56 +1,48 @@
 "use client"
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useEffect, useState } from "react"
+import { Incident } from "@/db/schema/incidents-schema"
+import { format } from "date-fns"
+import { Badge } from "@/components/ui/badge"
 
-const INCIDENTS = [
-  {
-    id: 1,
-    timestamp: "2024-06-01 10:15:00",
-    type: "fire",
-    description: "Fire detected in Server Room",
-    severity: "HIGH",
-    acknowledged: true,
-    resolved: false,
-  },
-  {
-    id: 2,
-    timestamp: "2024-06-01 09:50:00",
-    type: "smoke",
-    description: "Smoke detected in Main Floor",
-    severity: "MEDIUM",
-    acknowledged: false,
-    resolved: false,
-  },
-  {
-    id: 3,
-    timestamp: "2024-06-01 09:30:00",
-    type: "temperature",
-    description: "High temperature in Warehouse",
-    severity: "LOW",
-    acknowledged: true,
-    resolved: true,
-  },
-  {
-    id: 4,
-    timestamp: "2024-06-01 09:10:00",
-    type: "gas",
-    description: "Gas leak detected in Lab",
-    severity: "HIGH",
-    acknowledged: false,
-    resolved: false,
-  },
-  {
-    id: 5,
-    timestamp: "2024-06-01 08:55:00",
-    type: "fire",
-    description: "Fire detected in Office",
-    severity: "MEDIUM",
-    acknowledged: true,
-    resolved: true,
-  },
-]
+async function getRecentIncidents() {
+  const response = await fetch('/api/incidents/recent')
+  if (!response.ok) {
+    throw new Error('Failed to fetch incidents')
+  }
+  return response.json()
+}
 
 export default function IncidentLogsTable() {
+  const [incidents, setIncidents] = useState<Incident[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchIncidents = async () => {
+      try {
+        const data = await getRecentIncidents()
+        setIncidents(data)
+      } catch (err) {
+        setError('Failed to load incidents')
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchIncidents()
+  }, [])
+
+  if (loading) {
+    return <div>Loading incidents...</div>
+  }
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>
+  }
+
   return (
     <Table>
       <TableHeader>
@@ -64,12 +56,24 @@ export default function IncidentLogsTable() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {INCIDENTS.map((incident) => (
+        {incidents.map((incident) => (
           <TableRow key={incident.id}>
-            <TableCell>{incident.timestamp}</TableCell>
+            <TableCell>
+              {format(new Date(incident.timestamp), 'yyyy-MM-dd HH:mm:ss')}
+            </TableCell>
             <TableCell className="capitalize">{incident.type}</TableCell>
             <TableCell>{incident.description}</TableCell>
-            <TableCell>{incident.severity}</TableCell>
+            <TableCell>
+              {incident.severity === 1 && (
+                <Badge variant="outline">LOW</Badge>
+              )}
+              {incident.severity === 2 && (
+                <Badge variant="default">MEDIUM</Badge>
+              )}
+              {incident.severity === 3 && (
+                <Badge variant="destructive">HIGH</Badge>
+              )}
+            </TableCell>
             <TableCell>{incident.acknowledged ? "Yes" : "No"}</TableCell>
             <TableCell>{incident.resolved ? "Yes" : "No"}</TableCell>
           </TableRow>
