@@ -10,7 +10,7 @@ import { revalidatePath } from "next/cache"
 
 export async function getCameras() {
   const session = await getServerSession(authOptions)
-  if (!session || session.user.role !== "admin") {
+  if (!session || !["admin", "operator"].includes(session.user.role)) {
     throw new Error("Unauthorized")
   }
 
