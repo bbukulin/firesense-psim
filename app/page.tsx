@@ -1,6 +1,9 @@
+'use client'
+
 import { Button } from '@/components/ui/button'
 import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 
 export default function Home() {
   return (
@@ -37,20 +40,40 @@ export default function Home() {
       </div>
       <div className="mx-auto max-w-7xl px-6 pt-6 pb-12 sm:pb-20 lg:flex lg:px-8 lg:pt-16 lg:pb-24">
         <div className="max-w-xl shrink-0 pl-0 lg:mx-0 lg:pt-8">
-          <div className="mt-16">
+          <motion.div 
+            className="mt-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
             <p className="inline-flex space-x-6">
               <span className="inline-flex items-center space-x-2 text-xs font-medium text-gray-500 dark:text-gray-300">
                 <span>Just shipped v1.0</span>
               </span>
             </p>
-          </div>
-          <h1 className="mt-8 text-3xl font-semibold tracking-tight text-pretty text-gray-900 dark:text-white sm:text-5xl">
-          Proactive Fire Surveillance <br/> & Instant Alerts.
-          </h1>
-          <p className="mt-6 text-base font-normal text-pretty text-gray-700 dark:text-gray-400 sm:text-lg">
-          FireSense is a modern PSIM platform built for warehouse safety and surveillance. It integrates all your cameras, alarms, and sensors into one secure dashboard. 
-          </p>
-          <div className="mt-8 flex items-center gap-x-6">
+          </motion.div>
+          <motion.h1 
+            className="mt-8 text-3xl font-semibold tracking-tight text-pretty text-gray-900 dark:text-white sm:text-5xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            Proactive Fire Surveillance <br/> & Instant Alerts.
+          </motion.h1>
+          <motion.p 
+            className="mt-6 text-base font-normal text-pretty text-gray-700 dark:text-gray-400 sm:text-lg"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            FireSense is a modern PSIM platform built for warehouse safety and surveillance. It integrates all your cameras, alarms, and sensors into one secure dashboard. 
+          </motion.p>
+          <motion.div 
+            className="mt-8 flex items-center gap-x-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+          >
             <Button
               asChild
               variant="default"
@@ -61,9 +84,14 @@ export default function Home() {
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
-          </div>
+          </motion.div>
         </div>
-        <div className="mx-auto mt-16 flex max-w-2xl sm:mt-24 lg:mt-0 lg:mr-0 lg:ml-10 lg:max-w-none lg:flex-none xl:ml-32">
+        <motion.div 
+          className="mx-auto mt-16 flex max-w-2xl sm:mt-24 lg:mt-0 lg:mr-0 lg:ml-10 lg:max-w-none lg:flex-none xl:ml-32"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.7, delay: 0.6 }}
+        >
           <div className="max-w-3xl flex-none sm:max-w-5xl lg:max-w-none">
             <img
               alt="App screenshot light"
@@ -80,7 +108,7 @@ export default function Home() {
               className="hidden dark:block w-[76rem] rounded-md bg-white/5 ring-1 shadow-2xl ring-white/10"
             />
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   )
