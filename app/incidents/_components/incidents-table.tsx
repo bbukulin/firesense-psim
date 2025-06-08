@@ -231,6 +231,8 @@ export default function IncidentsTable({ incidents, isLoading = false }: Inciden
     return <div className="text-muted-foreground">No incidents found.</div>
   }
 
+  console.log("INCIDENTS:", incidents);
+
   return (
     <div className="space-y-4">
       <div className="rounded-md border">
