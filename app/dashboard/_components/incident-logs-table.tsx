@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 import { Incident } from "@/db/schema/incidents-schema"
 import { format } from "date-fns"
 import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
 
 async function getRecentIncidents() {
   const response = await fetch('/api/incidents/recent')
@@ -35,10 +36,6 @@ export default function IncidentLogsTable() {
     fetchIncidents()
   }, [])
 
-  if (loading) {
-    return <div>Loading incidents...</div>
-  }
-
   if (error) {
     return <div className="text-red-500">{error}</div>
   }
@@ -56,28 +53,41 @@ export default function IncidentLogsTable() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {incidents.map((incident) => (
-          <TableRow key={incident.id}>
-            <TableCell>
-              {format(new Date(incident.timestamp), 'yyyy-MM-dd HH:mm:ss')}
-            </TableCell>
-            <TableCell className="capitalize">{incident.type}</TableCell>
-            <TableCell>{incident.description}</TableCell>
-            <TableCell>
-              {incident.severity === 1 && (
-                <Badge variant="outline">LOW</Badge>
-              )}
-              {incident.severity === 2 && (
-                <Badge variant="default">MEDIUM</Badge>
-              )}
-              {incident.severity === 3 && (
-                <Badge variant="destructive">HIGH</Badge>
-              )}
-            </TableCell>
-            <TableCell>{incident.acknowledged ? "Yes" : "No"}</TableCell>
-            <TableCell>{incident.resolved ? "Yes" : "No"}</TableCell>
-          </TableRow>
-        ))}
+        {loading ? (
+          Array.from({ length: 5 }).map((_, i) => (
+            <TableRow key={i}>
+              <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-48" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+              <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+            </TableRow>
+          ))
+        ) : (
+          incidents.map((incident) => (
+            <TableRow key={incident.id}>
+              <TableCell>
+                {format(new Date(incident.timestamp), 'yyyy-MM-dd HH:mm:ss')}
+              </TableCell>
+              <TableCell className="capitalize">{incident.type}</TableCell>
+              <TableCell>{incident.description}</TableCell>
+              <TableCell>
+                {incident.severity === 1 && (
+                  <Badge variant="outline">LOW</Badge>
+                )}
+                {incident.severity === 2 && (
+                  <Badge variant="default">MEDIUM</Badge>
+                )}
+                {incident.severity === 3 && (
+                  <Badge variant="destructive">HIGH</Badge>
+                )}
+              </TableCell>
+              <TableCell>{incident.acknowledged ? "Yes" : "No"}</TableCell>
+              <TableCell>{incident.resolved ? "Yes" : "No"}</TableCell>
+            </TableRow>
+          ))
+        )}
       </TableBody>
     </Table>
   )

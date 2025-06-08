@@ -15,18 +15,17 @@ export function SpotlightLayout({ cameras, spotlightCameraId, onChangeSpotlight 
   const restCameras = cameras.filter((c) => c.id !== spotlightCamera.id)
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 min-h-[350px]">
-      {/* Spotlight camera */}
+    <div className="flex flex-col gap-6">
+      {/* Spotlight camera at the top, full width */}
       <AnimatePresence mode="wait">
         <motion.div
           key={spotlightCamera.id}
           layout
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
+          exit={{ opacity: 0, scale: 0.98 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="flex-1 min-w-0"
-          style={{ flexBasis: "75%" }}
+          className="w-full"
         >
           <CameraFeed
             name={spotlightCamera.name}
@@ -37,25 +36,27 @@ export function SpotlightLayout({ cameras, spotlightCameraId, onChangeSpotlight 
         </motion.div>
       </AnimatePresence>
 
-      {/* Rest of cameras stacked on the right */}
-      <div className="flex flex-row md:flex-col gap-4 md:w-1/4 min-w-[180px]">
-        {restCameras.map((camera) => (
-          <motion.div
-            key={camera.id}
-            layout
-            whileHover={{ scale: 1.04 }}
-            className="cursor-pointer"
-            onClick={() => onChangeSpotlight(camera.id)}
-          >
-            <CameraFeed
-              name={camera.name}
-              location={camera.location}
-              streamUrl={camera.streamUrl}
-              isActive={camera.active}
-            />
-          </motion.div>
-        ))}
-      </div>
+      {/* Rest of cameras in a responsive grid below */}
+      {restCameras.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {restCameras.map((camera) => (
+            <motion.div
+              key={camera.id}
+              layout
+              whileHover={{ scale: 1.04 }}
+              className="cursor-pointer"
+              onClick={() => onChangeSpotlight(camera.id)}
+            >
+              <CameraFeed
+                name={camera.name}
+                location={camera.location}
+                streamUrl={camera.streamUrl}
+                isActive={camera.active}
+              />
+            </motion.div>
+          ))}
+        </div>
+      )}
     </div>
   )
 } 
