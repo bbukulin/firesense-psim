@@ -4,7 +4,7 @@ import { incidents } from '@/db/schema/incidents-schema'
 import { users } from '@/db/schema/users-schema'
 import { desc, eq } from 'drizzle-orm'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const allIncidents = await db
       .select({
