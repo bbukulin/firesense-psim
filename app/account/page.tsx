@@ -88,7 +88,7 @@ export default function Account() {
             setEmail('admin@firesense.local')
             setPassword('#jP%9fayxU@6ExY6dG6W#$PWgp$X23zm4u@')
           }}
-          className="text-xs text-muted-foreground hover:text-primary transition-colors underline underline-offset-2"
+          className="text-md cursor-pointer text-muted-foreground hover:text-primary transition-colors underline underline-offset-2"
         >
           Admin Demo
         </a>
@@ -99,7 +99,7 @@ export default function Account() {
             setEmail('operator@firesense.local')
             setPassword('#jP%9fayxU@6ExY6dG6W#$PWgp$X23zm4u@')
           }}
-          className="text-xs text-muted-foreground hover:text-primary transition-colors underline underline-offset-2"
+          className="text-md cursor-pointer text-muted-foreground hover:text-primary transition-colors underline underline-offset-2"
         >
           Operator Demo
         </a>

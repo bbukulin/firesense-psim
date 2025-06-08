@@ -37,7 +37,7 @@ export default function IncidentDetailsDialog({
     if (!incident) return
 
     try {
-      const response = await fetch(`/api/incidents/${incident.id}/acknowledge`, {
+      const response = await fetch(`/api/incidents/acknowledge?id=${incident.id}`, {
         method: 'POST',
       })
 

@@ -78,7 +78,7 @@ export default function Home() {
             <Button
               asChild
               variant="default"
-              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer border border-amber-400 dark:border-none"
+              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold shadow-lg hover:shadow-xl transition-discrete transition-colors duration-300 cursor-pointer border border-amber-400 dark:border-none"
             >
               <Link href="/account">
                 Get Early Access

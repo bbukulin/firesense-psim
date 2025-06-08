@@ -58,9 +58,9 @@ export function Navbar() {
           <Button 
             variant="outline" 
             asChild
-            className={isActive('/account') ? 'text-amber-500 border-amber-500 hover:text-amber-500 hover:bg-amber-500/10' : ''}
+            className={isActive(session ? '/dashboard' : '/account') ? 'text-amber-500 border-amber-500 hover:text-amber-500 hover:bg-amber-500/10' : ''}
           >
-            <Link href="/account">
+            <Link href={session ? '/dashboard' : '/account'}>
               {session ? (session.user.role === 'admin' ? 'Admin' : 'Operator') : 'Account'}
             </Link>
           </Button>
