@@ -1,112 +1,277 @@
 "use client"
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useState } from "react"
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+  getPaginationRowModel,
+  SortingState,
+  getSortedRowModel,
+} from "@tanstack/react-table"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
+import { Incident } from "@/db/schema/incidents-schema"
+import { ArrowUpDown } from "lucide-react"
+import IncidentDetailsDialog from "./incident-details-dialog"
 
-interface Incident {
-  id: number
-  timestamp: string
-  type: string
-  description: string
-  severity: number
-  acknowledged: boolean
-  acknowledgedBy?: string | null
-  acknowledgedAt?: string | null
-  acknowledgedByEmail?: string | null
+// Extend the Incident type to include the email from the join
+type IncidentWithEmail = Incident & {
+  acknowledgedByEmail: string | null
 }
 
+const columns: ColumnDef<IncidentWithEmail>[] = [
+  {
+    accessorKey: "timestamp",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="flex items-center gap-1 cursor-pointer"
+        >
+          Timestamp
+          <ArrowUpDown className="h-4 w-4" />
+        </Button>
+      )
+    },
+    cell: ({ row }) => {
+      return format(new Date(row.getValue("timestamp")), 'yyyy-MM-dd HH:mm:ss')
+    },
+  },
+  {
+    accessorKey: "type",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="flex items-center gap-1 cursor-pointer"
+        >
+          Type
+          <ArrowUpDown className="h-4 w-4" />
+        </Button>
+      )
+    },
+    cell: ({ row }) => {
+      return <span className="capitalize">{row.getValue("type")}</span>
+    },
+  },
+  {
+    accessorKey: "description",
+    header: "Description",
+    cell: ({ row }) => {
+      const description = row.getValue("description") as string
+      return (
+        <div className="max-w-xs truncate" title={description}>
+          {description}
+        </div>
+      )
+    },
+  },
+  {
+    accessorKey: "severity",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="flex items-center gap-1 cursor-pointer text-center w-full"
+        >
+          Severity
+          <ArrowUpDown className="h-4 w-4" />
+        </Button>
+      )
+    },
+    cell: ({ row }) => {
+      const severity = row.getValue("severity") as number
+      return (
+        <div className="text-center w-full">
+          {severity === 1 && <Badge variant="outline">LOW</Badge>}
+          {severity === 2 && <Badge variant="default">MEDIUM</Badge>}
+          {severity === 3 && <Badge variant="destructive">HIGH</Badge>}
+        </div>
+      )
+    },
+  },
+  {
+    accessorKey: "acknowledged",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="flex items-center gap-1 cursor-pointer text-center w-full"
+        >
+          Acknowledged
+          <ArrowUpDown className="h-4 w-4" />
+        </Button>
+      )
+    },
+    cell: ({ row }) => {
+      return <div className="text-center w-full">{row.getValue("acknowledged") ? "Yes" : "No"}</div>
+    },
+  },
+  {
+    accessorKey: "acknowledgedByEmail",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="flex items-center gap-1 cursor-pointer"
+        >
+          Acknowledged By
+          <ArrowUpDown className="h-4 w-4" />
+        </Button>
+      )
+    },
+    cell: ({ row }) => {
+      const email = row.getValue("acknowledgedByEmail") as string
+      return email || <span className="text-muted-foreground">-</span>
+    },
+  },
+  {
+    accessorKey: "acknowledgedAt",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="flex items-center gap-1 cursor-pointer"
+        >
+          Acknowledged At
+          <ArrowUpDown className="h-4 w-4" />
+        </Button>
+      )
+    },
+    cell: ({ row }) => {
+      const timestamp = row.getValue("acknowledgedAt") as string
+      return timestamp ? format(new Date(timestamp), 'yyyy-MM-dd HH:mm:ss') : <span className="text-muted-foreground">-</span>
+    },
+  },
+]
+
 interface IncidentsTableProps {
-  incidents: Incident[]
+  incidents: IncidentWithEmail[]
 }
 
 export default function IncidentsTable({ incidents }: IncidentsTableProps) {
+  const [sorting, setSorting] = useState<SortingState>([
+    {
+      id: "timestamp",
+      desc: true
+    }
+  ])
+  const [selectedIncident, setSelectedIncident] = useState<IncidentWithEmail | undefined>()
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false)
+
+  const table = useReactTable({
+    data: incidents,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
+    state: {
+      sorting,
+    },
+  })
+
   if (!incidents || incidents.length === 0) {
     return <div className="text-muted-foreground">No incidents found.</div>
   }
 
   return (
-    <div>
-      {/* Card list for small screens */}
-      <div className="sm:hidden space-y-4">
-        {incidents.map((incident) => (
-          <div key={incident.id} className="rounded-lg border bg-card p-4 shadow-sm">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs text-muted-foreground">{format(new Date(incident.timestamp), 'yyyy-MM-dd HH:mm:ss')}</span>
-              <Badge className="ml-2">
-                {incident.severity === 1 && "LOW"}
-                {incident.severity === 2 && "MEDIUM"}
-                {incident.severity === 3 && "HIGH"}
-              </Badge>
-            </div>
-            <div className="font-semibold capitalize mb-1">{incident.type}</div>
-            <div className="text-sm mb-2 truncate" title={incident.description}>{incident.description}</div>
-            <div className="flex flex-col gap-1 text-xs">
-              <div><span className="font-medium">Acknowledged:</span> {incident.acknowledged ? "Yes" : "No"}</div>
-              <div><span className="font-medium">By:</span> {incident.acknowledgedByEmail || <span className="text-muted-foreground">-</span>}</div>
-              <div><span className="font-medium">At:</span> {incident.acknowledgedAt ? format(new Date(incident.acknowledgedAt), 'yyyy-MM-dd HH:mm:ss') : <span className="text-muted-foreground">-</span>}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Table for md+ screens */}
-      <div className="hidden sm:block overflow-x-auto rounded-lg border bg-card">
-        <Table className="min-w-full">
+    <div className="space-y-4">
+      <div className="rounded-md border">
+        <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead className="font-medium text-sm py-2 px-3 text-right">Timestamp</TableHead>
-              <TableHead className="font-medium text-sm py-2 px-3">Type</TableHead>
-              <TableHead className="font-medium text-sm py-2 px-3">Description</TableHead>
-              <TableHead className="font-medium text-sm py-2 px-3">Severity</TableHead>
-              <TableHead className="font-medium text-sm py-2 px-3">Acknowledged</TableHead>
-              <TableHead className="font-medium text-sm py-2 px-3">Acknowledged By</TableHead>
-              <TableHead className="font-medium text-sm py-2 px-3 text-right">Acknowledged At</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {incidents.map((incident) => (
-              <TableRow
-                key={incident.id}
-                className="odd:bg-muted/30 hover:bg-muted/50 transition-colors"
-              >
-                <TableCell className="text-sm py-2 px-3 text-right whitespace-nowrap">
-                  {format(new Date(incident.timestamp), 'yyyy-MM-dd HH:mm:ss')}
-                </TableCell>
-                <TableCell className="text-sm py-2 px-3 capitalize">
-                  {incident.type}
-                </TableCell>
-                <TableCell
-                  className="text-sm py-2 px-3 max-w-xs truncate"
-                  title={incident.description}
-                >
-                  {incident.description}
-                </TableCell>
-                <TableCell className="text-sm py-2 px-3">
-                  {incident.severity === 1 && (
-                    <Badge variant="outline">LOW</Badge>
-                  )}
-                  {incident.severity === 2 && (
-                    <Badge variant="default">MEDIUM</Badge>
-                  )}
-                  {incident.severity === 3 && (
-                    <Badge variant="destructive">HIGH</Badge>
-                  )}
-                </TableCell>
-                <TableCell className="text-sm py-2 px-3">
-                  {incident.acknowledged ? "Yes" : "No"}
-                </TableCell>
-                <TableCell className="text-sm py-2 px-3">
-                  {incident.acknowledgedByEmail ? incident.acknowledgedByEmail : <span className="text-muted-foreground">-</span>}
-                </TableCell>
-                <TableCell className="text-sm py-2 px-3 text-right whitespace-nowrap">
-                  {incident.acknowledgedAt ? format(new Date(incident.acknowledgedAt), 'yyyy-MM-dd HH:mm:ss') : <span className="text-muted-foreground">-</span>}
-                </TableCell>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id} className="whitespace-nowrap">
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                  className="odd:bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => {
+                    setSelectedIncident(row.original)
+                    setIsDetailsOpen(true)
+                  }}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id} className="whitespace-nowrap">
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  No incidents found.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
+
+      <div className="flex items-center justify-end space-x-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+        >
+          Previous
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
+        >
+          Next
+        </Button>
+      </div>
+
+      <IncidentDetailsDialog
+        incident={selectedIncident}
+        open={isDetailsOpen}
+        onOpenChange={setIsDetailsOpen}
+      />
     </div>
   )
 } 
