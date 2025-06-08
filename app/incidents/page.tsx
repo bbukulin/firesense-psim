@@ -2,13 +2,13 @@
 
 import IncidentsTable from "./_components/incidents-table"
 import { Suspense } from "react"
+import { getAllIncidents } from "@/lib/incidents"
 
 export default async function IncidentsPage() {
   const baseUrl = process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
     : 'http://localhost:3000';
-  const res = await fetch(`${baseUrl}/api/incidents`, { cache: 'no-store' })
-  const incidents = await res.json()
+  const incidents = await getAllIncidents();
 
   return (
     <div className="container mx-auto px-4 py-4 sm:py-6 md:py-8 flex flex-col items-center">
