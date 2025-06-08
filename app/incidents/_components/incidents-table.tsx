@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   ColumnDef,
   flexRender,
@@ -177,9 +177,14 @@ export default function IncidentsTable({ incidents, isLoading = false }: Inciden
   ])
   const [selectedIncident, setSelectedIncident] = useState<IncidentWithEmail | undefined>()
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
+  const [data, setData] = useState(incidents)
+
+  useEffect(() => {
+    setData(incidents)
+  }, [incidents])
 
   const table = useReactTable({
-    data: incidents,
+    data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
