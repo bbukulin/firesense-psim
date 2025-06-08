@@ -4,7 +4,10 @@ import IncidentsTable from "./_components/incidents-table"
 import { Suspense } from "react"
 
 export default async function IncidentsPage() {
-  const res = await fetch('/api/incidents', { cache: 'no-store' })
+  const baseUrl = process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : 'http://localhost:3000';
+  const res = await fetch(`${baseUrl}/api/incidents`, { cache: 'no-store' })
   const incidents = await res.json()
 
   return (
