@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/db'
 import { incidents } from '@/db/schema/incidents-schema'
 import { getServerSession } from 'next-auth'
@@ -6,8 +6,8 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/auth.config'
 import { eq } from 'drizzle-orm'
 
 export async function POST(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -15,7 +15,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const incidentId = parseInt(params.id)
+    const incidentId = parseInt(context.params.id)
     if (isNaN(incidentId)) {
       return NextResponse.json({ error: 'Invalid incident ID' }, { status: 400 })
     }

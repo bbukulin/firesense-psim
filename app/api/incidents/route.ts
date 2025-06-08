@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/db'
 import { incidents } from '@/db/schema/incidents-schema'
 import { users } from '@/db/schema/users-schema'
 import { desc, eq } from 'drizzle-orm'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const allIncidents = await db
       .select({
