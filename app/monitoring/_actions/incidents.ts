@@ -5,7 +5,7 @@ import { incidents, incidentTypes } from "@/db/schema/incidents-schema"
 import { revalidatePath } from "next/cache"
 import { eq } from "drizzle-orm"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { authOptions } from "@/app/api/auth/[...nextauth]/auth.config"
 
 export async function simulateIncident() {
   // Randomly select an incident type
