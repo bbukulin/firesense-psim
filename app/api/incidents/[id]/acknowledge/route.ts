@@ -7,7 +7,7 @@ import { eq } from 'drizzle-orm'
 
 export async function POST(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -15,7 +15,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const incidentId = parseInt(context.params.id)
+    const incidentId = parseInt(params.id)
     if (isNaN(incidentId)) {
       return NextResponse.json({ error: 'Invalid incident ID' }, { status: 400 })
     }
