@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { simulateIncident, acknowledgeIncident } from "../_actions/incidents"
 import { Camera } from "@/db/schema/cameras-schema"
+import { toast } from "sonner"
 
 interface MonitoringPageClientProps {
   cameras: Camera[]
@@ -32,7 +33,7 @@ export default function MonitoringPageClient({ cameras }: MonitoringPageClientPr
     startTransition(async () => {
       await acknowledgeIncident(overlayData.id)
       setOverlayData(null)
-      window.location.href = "/incidents"
+      toast.success("Incident Acknowledged. See Incidents page for more details.")
     })
   }
 
