@@ -5,9 +5,6 @@ import { Suspense } from "react"
 import { getAllIncidents } from "@/lib/incidents"
 
 export default async function IncidentsPage() {
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : 'http://localhost:3000';
   const incidents = await getAllIncidents();
 
   return (
