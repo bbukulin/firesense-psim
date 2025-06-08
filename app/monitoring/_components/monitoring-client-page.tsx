@@ -5,7 +5,7 @@ import { Camera } from "@/db/schema/cameras-schema"
 import { CameraGrid } from "./camera-grid"
 import { Button } from "@/components/ui/button"
 import { LayoutGrid, Focus } from "lucide-react"
-// @ts-ignore
+// @ts-expect-error - SpotlightLayout component is not typed
 import { SpotlightLayout } from "./spotlight-layout"
 
 interface MonitoringClientPageProps {

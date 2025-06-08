@@ -6,7 +6,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { AlertCircle, RefreshCw, Maximize2, Minimize2, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-// @ts-ignore
 import Hls from "hls.js"
 
 interface CameraFeedProps {
@@ -52,7 +51,7 @@ export function CameraFeed({ name, location, streamUrl, isActive = true }: Camer
         setError(null)
         video.play().catch(() => {})
       })
-      hls.on(Hls.Events.ERROR, (event, data) => {
+      hls.on(Hls.Events.ERROR, () => {
         setIsLoading(false)
         setError("Failed to load camera feed (HLS.js error)")
       })

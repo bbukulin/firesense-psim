@@ -22,7 +22,7 @@ export async function GET() {
       .leftJoin(users, eq(incidents.acknowledgedBy, users.id))
       .orderBy(desc(incidents.timestamp))
     return NextResponse.json(allIncidents)
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch incidents' }, { status: 500 })
   }
 } 

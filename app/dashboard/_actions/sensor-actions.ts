@@ -2,7 +2,7 @@
 
 import { db } from "../../../db"
 import { sensors, sensorReadings } from "@/db/schema/sensors-schema"
-import { eq, desc, and } from "drizzle-orm"
+import { eq, desc } from "drizzle-orm"
 import { ActionState } from "../../../types"
 
 type SensorWithLatestReading = {
@@ -49,8 +49,7 @@ export async function getLatestSensorReadingsAction(): Promise<
       message: "Successfully fetched latest sensor readings",
       data: sensorsWithReadings
     }
-  } catch (error) {
-    console.error("Error fetching sensor readings:", error)
+  } catch {
     return {
       isSuccess: false,
       message: "Failed to fetch sensor readings"
@@ -85,8 +84,7 @@ export async function getTemperatureReadingsAction() {
       isSuccess: true,
       data: formattedData,
     }
-  } catch (error) {
-    console.error('Error fetching temperature readings:', error)
+  } catch {
     return {
       isSuccess: false,
       message: 'Failed to fetch temperature readings',
@@ -123,8 +121,7 @@ export async function getSmokeReadingsAction() {
       isSuccess: true,
       data: formattedData,
     }
-  } catch (error) {
-    console.error('Error fetching smoke readings:', error)
+  } catch {
     return {
       isSuccess: false,
       message: 'Failed to fetch smoke readings',
@@ -159,8 +156,7 @@ export async function getGasReadingsAction() {
       isSuccess: true,
       data: formattedData,
     }
-  } catch (error) {
-    console.error('Error fetching gas readings:', error)
+  } catch {
     return {
       isSuccess: false,
       message: 'Failed to fetch gas readings',

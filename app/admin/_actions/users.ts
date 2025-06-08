@@ -5,11 +5,18 @@ import { users } from "@/db/schema/users-schema"
 import { desc, eq } from "drizzle-orm"
 import { hash } from "bcryptjs"
 
+type UserUpdateData = {
+  email: string;
+  username: string;
+  role: "admin" | "operator";
+  passwordHash?: string;
+}
+
 export async function getUsers() {
   try {
     const data = await db.select().from(users).orderBy(desc(users.createdAt))
     return { data }
-  } catch (error) {
+  } catch {
     return { error: "Failed to fetch users" }
   }
 }
@@ -42,7 +49,7 @@ export async function createUser(formData: FormData) {
     })
 
     return { success: true }
-  } catch (error) {
+  } catch {
     return { error: "Failed to create user" }
   }
 }
@@ -81,7 +88,7 @@ export async function updateUser(formData: FormData) {
       }
     }
 
-    const updateData: any = {
+    const updateData: UserUpdateData = {
       email,
       username,
       role,
@@ -95,7 +102,7 @@ export async function updateUser(formData: FormData) {
     await db.update(users).set(updateData).where(eq(users.id, id))
 
     return { success: true }
-  } catch (error) {
+  } catch {
     return { error: "Failed to update user" }
   }
 }
@@ -115,7 +122,7 @@ export async function deleteUser(id: string) {
     }
     await db.delete(users).where(eq(users.id, id))
     return { success: true }
-  } catch (error) {
+  } catch {
     return { error: "Failed to delete user" }
   }
 } 

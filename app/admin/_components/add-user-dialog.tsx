@@ -75,7 +75,7 @@ export default function AddUserDialog({
         role: user?.role || "operator",
       })
     }
-  }, [user, open])
+  }, [user, open, form])
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
@@ -110,7 +110,7 @@ export default function AddUserDialog({
       form.reset()
       onOpenChange(false)
       onUserAdded()
-    } catch (error) {
+    } catch {
       toast.error("Failed to save user")
     } finally {
       setIsSubmitting(false)

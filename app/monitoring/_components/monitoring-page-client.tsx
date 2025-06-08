@@ -6,9 +6,10 @@ import MonitoringClientPage from "./monitoring-client-page"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { simulateIncident, acknowledgeIncident } from "../_actions/incidents"
+import { Camera } from "@/db/schema/cameras-schema"
 
 interface MonitoringPageClientProps {
-  cameras: any[]
+  cameras: Camera[]
 }
 
 export default function MonitoringPageClient({ cameras }: MonitoringPageClientProps) {

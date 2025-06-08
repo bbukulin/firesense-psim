@@ -93,7 +93,7 @@ export default function AddCameraDialog({
       }
       form.reset()
       onOpenChange(false)
-    } catch (error) {
+    } catch {
       toast.error(camera ? "Failed to update camera" : "Failed to add camera")
     } finally {
       setIsLoading(false)

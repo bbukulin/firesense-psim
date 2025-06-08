@@ -1,7 +1,7 @@
 "use server"
 
 import { db } from "@/db"
-import { incidents, incidentTypes, severityLevels } from "@/db/schema/incidents-schema"
+import { incidents, incidentTypes } from "@/db/schema/incidents-schema"
 import { revalidatePath } from "next/cache"
 import { eq } from "drizzle-orm"
 import { getServerSession } from "next-auth"
@@ -28,8 +28,7 @@ export async function simulateIncident() {
       severity: randomSeverity,
       id: insertedIncident.id,
     }
-  } catch (error) {
-    console.error("Failed to simulate incident:", error)
+  } catch {
     return { success: false, error: "Failed to simulate incident" }
   }
 }
@@ -49,8 +48,7 @@ export async function acknowledgeIncident(incidentId: number) {
       .where(eq(incidents.id, incidentId))
     revalidatePath("/monitoring")
     return { success: true }
-  } catch (error) {
-    console.error("Failed to acknowledge incident:", error)
+  } catch {
     return { success: false, error: "Failed to acknowledge incident" }
   }
 } 

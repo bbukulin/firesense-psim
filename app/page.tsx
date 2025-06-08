@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion } from 'framer-motion'
 
 export default function Home() {
@@ -93,19 +94,21 @@ export default function Home() {
           transition={{ duration: 0.7, delay: 0.6 }}
         >
           <div className="max-w-3xl flex-none sm:max-w-5xl lg:max-w-none">
-            <img
+            <Image
               alt="App screenshot light"
               src="/hero-light.png"
               width={2432}
               height={1442}
               className="block dark:hidden w-[76rem] rounded-md bg-white/70 ring-1 shadow-2xl ring-black/10"
+              priority
             />
-            <img
+            <Image
               alt="App screenshot dark"
               src="/hero-dark.png"
               width={2432}
               height={1442}
               className="hidden dark:block w-[76rem] rounded-md bg-white/5 ring-1 shadow-2xl ring-white/10"
+              priority
             />
           </div>
         </motion.div>

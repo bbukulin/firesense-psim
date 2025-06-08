@@ -121,7 +121,7 @@ export function UsersTable() {
       } else {
         setUsers(result.data || [])
       }
-    } catch (err) {
+    } catch {
       setError("Failed to fetch users")
     } finally {
       setLoading(false)
@@ -153,7 +153,7 @@ export function UsersTable() {
         toast.success("User deleted successfully")
         fetchUsers()
       }
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete user")
     } finally {
       setDeleteDialogOpen(false)

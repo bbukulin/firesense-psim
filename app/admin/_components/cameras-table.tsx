@@ -140,7 +140,7 @@ export function CamerasTable() {
       try {
         const camerasList = await getCameras()
         setCameras(camerasList)
-      } catch (error) {
+      } catch {
         toast.error("Failed to load cameras")
       } finally {
         setIsLoading(false)
@@ -161,7 +161,7 @@ export function CamerasTable() {
       await deleteCamera(cameraToDelete.id)
       setCameras(cameras.filter((c) => c.id !== cameraToDelete.id))
       toast.success("Camera deleted successfully")
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete camera")
     } finally {
       setIsDeleteDialogOpen(false)

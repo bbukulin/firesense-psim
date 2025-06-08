@@ -30,7 +30,7 @@ export default function Account() {
 
       router.push('/dashboard')
       router.refresh()
-    } catch (error) {
+    } catch {
       setError('An error occurred. Please try again.')
     }
   }
