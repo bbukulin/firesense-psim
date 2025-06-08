@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
@@ -118,9 +119,14 @@ export default function AddUserDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{isEditMode ? "Edit User" : "Add New User"}</DialogTitle>
+          <DialogDescription>
+            {isEditMode
+              ? "Update the user details below."
+              : "Add a new user to the system. Fill in the details below."}
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -131,7 +137,7 @@ export default function AddUserDialog({
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input {...field} type="email" />
+                    <Input {...field} type="email" placeholder="john.doe@example.com" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -142,9 +148,9 @@ export default function AddUserDialog({
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>Username</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} placeholder="john.doe" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -159,7 +165,7 @@ export default function AddUserDialog({
                     Password {isEditMode && "(leave blank to keep current)"}
                   </FormLabel>
                   <FormControl>
-                    <Input {...field} type="password" />
+                    <Input {...field} type="password" placeholder="********" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -191,13 +197,14 @@ export default function AddUserDialog({
             />
             <div className="flex justify-end space-x-2">
               <Button
+                className="cursor-pointer"
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button className="cursor-pointer" type="submit" disabled={isSubmitting}>
                 {isSubmitting
                   ? "Saving..."
                   : isEditMode

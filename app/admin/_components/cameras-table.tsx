@@ -19,6 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Camera } from "@/db/schema/cameras-schema"
 import { toast } from "sonner"
 import { Pencil, Trash2 } from "lucide-react"
@@ -67,6 +68,51 @@ const columns: ColumnDef<Camera>[] = [
     },
   },
 ]
+
+function TableSkeleton() {
+  return (
+    <div className="space-y-3 sm:space-y-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+        <Skeleton className="h-8 w-24" />
+        <Skeleton className="h-10 w-24" />
+      </div>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <TableHead key={i}>
+                  <Skeleton className="h-4 w-24" />
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <TableRow key={i}>
+                {Array.from({ length: 6 }).map((_, j) => (
+                  <TableCell key={j}>
+                    <Skeleton className="h-4 w-full" />
+                  </TableCell>
+                ))}
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="flex items-center justify-end space-x-2">
+        <Skeleton className="h-8 w-20" />
+        <Skeleton className="h-8 w-20" />
+      </div>
+    </div>
+  )
+}
 
 export function CamerasTable() {
   const [sorting, setSorting] = useState<SortingState>([])
@@ -129,14 +175,14 @@ export function CamerasTable() {
   }
 
   if (isLoading) {
-    return <div>Loading cameras...</div>
+    return <TableSkeleton />
   }
 
   return (
     <div className="space-y-3 sm:space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
         <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight">Cameras</h2>
-        <Button onClick={() => {
+        <Button className="cursor-pointer" onClick={() => {
           setCameraToEdit(undefined)
           setIsAddDialogOpen(true)
         }}>Add Camera</Button>
@@ -179,18 +225,19 @@ export function CamerasTable() {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Button
+                        className="cursor-pointer"
                         variant="ghost"
                         size="icon"
                         onClick={() => handleEdit(row.original)}
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="h-4 w-4 text-blue-500" aria-label="Edit Camera"/>
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDelete(row.original)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4 text-red-500" aria-label="Delete Camera"/>
                       </Button>
                     </div>
                   </TableCell>

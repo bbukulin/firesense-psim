@@ -156,7 +156,7 @@ export default function AddCameraDialog({
               )}
             />
             <DialogFooter>
-              <Button type="submit" disabled={isLoading}>
+              <Button className="cursor-pointer" type="submit" disabled={isLoading}>
                 {isLoading
                   ? camera
                     ? "Updating..."

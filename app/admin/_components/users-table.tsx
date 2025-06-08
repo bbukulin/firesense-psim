@@ -19,6 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import AddUserDialog from "./add-user-dialog"
 import { User } from "@/db/schema/users-schema"
 import { getUsers, deleteUser } from "../_actions/users"
@@ -56,6 +57,51 @@ const columns: ColumnDef<User>[] = [
     },
   },
 ]
+
+function TableSkeleton() {
+  return (
+    <div className="space-y-3 sm:space-y-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+        <Skeleton className="h-8 w-24" />
+        <Skeleton className="h-10 w-24" />
+      </div>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <TableHead key={i}>
+                  <Skeleton className="h-4 w-24" />
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <TableRow key={i}>
+                {Array.from({ length: 5 }).map((_, j) => (
+                  <TableCell key={j}>
+                    <Skeleton className="h-4 w-full" />
+                  </TableCell>
+                ))}
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="flex items-center justify-end space-x-2">
+        <Skeleton className="h-8 w-20" />
+        <Skeleton className="h-8 w-20" />
+      </div>
+    </div>
+  )
+}
 
 export function UsersTable() {
   const [sorting, setSorting] = useState<SortingState>([])
@@ -128,7 +174,7 @@ export function UsersTable() {
   })
 
   if (loading) {
-    return <div>Loading users...</div>
+    return <TableSkeleton />
   }
 
   if (error) {
@@ -139,7 +185,7 @@ export function UsersTable() {
     <div className="space-y-3 sm:space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
         <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight">Users</h2>
-        <Button onClick={() => {
+        <Button className="cursor-pointer" onClick={() => {
           setSelectedUser(undefined)
           setOpen(true)
         }}>
@@ -185,18 +231,20 @@ export function UsersTable() {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Button
+                        className="cursor-pointer"
                         variant="ghost"
                         size="icon"
                         onClick={() => handleEdit(row.original)}
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="h-4 w-4 text-blue-500" aria-label="Edit User"/>
                       </Button>
                       <Button
+                        className="cursor-pointer"
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDelete(row.original)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4 text-red-500" aria-label="Delete User"/>
                       </Button>
                     </div>
                   </TableCell>

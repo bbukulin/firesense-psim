@@ -24,6 +24,7 @@ import { format } from "date-fns"
 import { Incident } from "@/db/schema/incidents-schema"
 import { ArrowUpDown } from "lucide-react"
 import IncidentDetailsDialog from "./incident-details-dialog"
+import { Skeleton } from "@/components/ui/skeleton"
 
 // Extend the Incident type to include the email from the join
 type IncidentWithEmail = Incident & {
@@ -164,9 +165,10 @@ const columns: ColumnDef<IncidentWithEmail>[] = [
 
 interface IncidentsTableProps {
   incidents: IncidentWithEmail[]
+  isLoading?: boolean
 }
 
-export default function IncidentsTable({ incidents }: IncidentsTableProps) {
+export default function IncidentsTable({ incidents, isLoading = false }: IncidentsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([
     {
       id: "timestamp",
@@ -187,6 +189,43 @@ export default function IncidentsTable({ incidents }: IncidentsTableProps) {
       sorting,
     },
   })
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              {Array.from({ length: 1 }).map((_, i) => (
+                <TableRow key={i}>
+                  {Array.from({ length: 8 }).map((_, j) => (
+                    <TableHead key={j}>
+                      <Skeleton className="h-8 w-full" />
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i}>
+                  {Array.from({ length: 8 }).map((_, j) => (
+                    <TableCell key={j}>
+                      <Skeleton className="h-6 w-full" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+        <div className="flex items-center justify-end space-x-2">
+          <Skeleton className="h-8 w-20" />
+          <Skeleton className="h-8 w-20" />
+        </div>
+      </div>
+    )
+  }
 
   if (!incidents || incidents.length === 0) {
     return <div className="text-muted-foreground">No incidents found.</div>

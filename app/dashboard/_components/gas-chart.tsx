@@ -62,7 +62,7 @@ export default function GasChart() {
           <Skeleton className="h-10 w-32" />
         ) : (
           <Select value={selectedLocation ?? undefined} onValueChange={setSelectedLocation}>
-            <SelectTrigger className="min-w-[8rem] w-auto">
+            <SelectTrigger className="min-w-[8rem] w-auto cursor-pointer">
               <SelectValue placeholder="Select location" />
             </SelectTrigger>
             <SelectContent>
