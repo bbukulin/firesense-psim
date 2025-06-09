@@ -2,7 +2,7 @@
 
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,6 +13,11 @@ export default function Account() {
   const [error, setError] = useState<string | null>(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+
+  useEffect(() => {
+    setEmail('admin@firesense.local')
+    setPassword('#jP%9fayxU@6ExY6dG6W#$PWgp$X23zm4u@')
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -76,7 +81,7 @@ export default function Account() {
                 />
               </div>
             </div>
-            <Button type="submit" className="w-full mt-2 cursor-pointer text-white">Authenticate</Button>
+            <Button type="submit" className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold shadow-lg hover:shadow-xl transition-discrete transition-colors duration-300 cursor-pointer border border-amber-400 dark:border-none">Authenticate</Button>
           </form>
         </CardContent>
       </Card>
@@ -85,21 +90,10 @@ export default function Account() {
           href="#"
           onClick={e => {
             e.preventDefault()
-            setEmail('admin@firesense.local')
-            setPassword('#jP%9fayxU@6ExY6dG6W#$PWgp$X23zm4u@')
-          }}
-          className="text-md cursor-pointer text-muted-foreground hover:text-primary transition-colors underline underline-offset-2"
-        >
-          Admin Demo
-        </a>
-        <a
-          href="#"
-          onClick={e => {
-            e.preventDefault()
             setEmail('operator@firesense.local')
             setPassword('#jP%9fayxU@6ExY6dG6W#$PWgp$X23zm4u@')
           }}
-          className="text-md cursor-pointer text-muted-foreground hover:text-primary transition-colors underline underline-offset-2"
+          className="text-md cursor-pointer text-zinc-800 hover:text-primary transition-colors underline underline-offset-2"
         >
           Operator Demo
         </a>
